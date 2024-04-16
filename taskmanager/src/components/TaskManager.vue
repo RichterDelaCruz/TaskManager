@@ -1,11 +1,12 @@
 <template>
     <div>
-        <TaskForm @add-task="addTask" />
-        <TaskList :tasks="tasks" @update-status="updateTaskStatus" @delete-task="deleteTask" />
+        <TaskForm @add-task="addTaskToServer" />
+        <TaskList :tasks="tasks" @update-status="updateTaskStatusOnServer" @delete-task="deleteTaskFromServer" />
     </div>
 </template>
 
 <script>
+import axios from 'axios';
 import TaskForm from './TaskForm.vue';
 import TaskList from './TaskList.vue';
 
@@ -17,27 +18,49 @@ export default {
     },
     data() {
         return {
-            tasks: [] // Assuming this is an array of tasks fetched from the API
+            tasks: []
         };
     },
+    mounted() {
+        // Fetch tasks from the server when the component is mounted
+        this.fetchTasksFromServer();
+    },
     methods: {
-        addTask(newTask) {
-            // Add the new task to the tasks array
-            this.tasks.push(newTask);
-            // You would also send a POST request to your backend API to add the task
+        async fetchTasksFromServer() {
+            try {
+                const response = await axios.get('http://localhost:3000/tasks');
+                this.tasks = response.data;
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
         },
-        updateTaskStatus(taskId) {
-            // Find the index of the task to update
-            const index = this.tasks.findIndex(task => task.id === taskId);
-            // Toggle the status of the task
-            this.tasks[index].status = this.tasks[index].status === 'completed' ? 'pending' : 'completed';
-            // You would also send a PUT request to your backend API to update the task status
+        async addTaskToServer(newTask) {
+            try {
+                await axios.post('http://localhost:3000/tasks', newTask);
+                // After adding task to server, fetch updated tasks from server
+                this.fetchTasksFromServer();
+            } catch (error) {
+                console.error('Error adding task:', error);
+            }
         },
-        deleteTask(taskId) {
-            // Filter out the task to delete from the tasks array
-            this.tasks = this.tasks.filter(task => task.id !== taskId);
-            // You would also send a DELETE request to your backend API to delete the task
+        async updateTaskStatusOnServer(updatedTask) {
+            try {
+                await axios.put(`http://localhost:3000/tasks/${updatedTask.id}`, { status: updatedTask.status });
+                // After updating task status on server, fetch updated tasks from server
+                this.fetchTasksFromServer();
+            } catch (error) {
+                console.error('Error updating task status:', error);
+            }
+        },
+        async deleteTaskFromServer(taskId) {
+            try {
+                await axios.delete(`http://localhost:3000/tasks/${taskId}`);
+                // After deleting task from server, fetch updated tasks from server
+                this.fetchTasksFromServer();
+            } catch (error) {
+                console.error('Error deleting task:', error);
+            }
         }
     }
-}
+};
 </script>

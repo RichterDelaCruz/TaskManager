@@ -1,8 +1,13 @@
 <template>
-    <li>
-        <span>{{ task.title }} - {{ task.status }}</span>
-        <button @click="toggleStatus">Toggle Status</button>
-        <button @click="deleteTask">Delete</button>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+            <span>{{ task.title }} - {{ task.status }}</span>
+        </div>
+        <div>
+            <!-- Button to toggle task status -->
+            <button @click="toggleStatus" class="btn btn-sm btn-primary me-2">Toggle Status</button>
+            <button @click="deleteTask" class="btn btn-sm btn-danger">Delete</button>
+        </div>
     </li>
 </template>
 
@@ -17,12 +22,14 @@ export default {
     },
     methods: {
         toggleStatus() {
-            // Emit an event to the parent component to update the task status
-            this.$emit('update-status', this.task.id); // Pass task id instead of the whole task
+            // Toggle between 'pending' and 'completed' statuses
+            const newStatus = this.task.status === 'pending' ? 'completed' : 'pending';
+            // Emit event to update task status
+            this.$emit('update-status', { id: this.task.id, status: newStatus });
         },
         deleteTask() {
-            // Emit an event to the parent component to delete the task
-            this.$emit('delete-task', this.task.id); // Pass task id instead of the whole task
+            // Emit event to delete task
+            this.$emit('delete-task', this.task.id);
         }
     }
 }
